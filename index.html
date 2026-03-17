@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gestor Financeiro Pro</title>
+    
+    <!-- PWA & Mobile Optimization -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Financeiro">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#6366f1">
+    
+    <!-- Google Fonts - Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bibliotecas Externas (CDN HTTPS) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    
+    <style>
+        :root { 
+            --primary: #6366f1; 
+            --primary-soft: #eef2ff;
+            --bg-body: #f1f5f9; 
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --white: #ffffff;
+            --radius-lg: 20px;
+            --radius-md: 12px;
+        }
+
+        body { 
+            background-color: var(--bg-body); 
+            font-family: 'Inter', sans-serif; 
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
+            letter-spacing: -0.01em;
+            padding-bottom: 30px;
+        }
+
+        /* Header Estilo Fintech */
+        .app-header {
+            background: var(--white);
+            padding: 1rem 0;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 1.5rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        /* Navegação Estilo Pill */
+        .nav-pills {
+            background: #e2e8f0;
+            padding: 4px;
+            border-radius: 14px;
+            display: inline-flex;
+        }
+        .nav-pills .nav-link {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            border-radius: 11px;
+            padding: 8px 18px;
+            transition: all 0.2s ease;
+        }
+        .nav-pills .nav-link.active {
+            background-color: var(--white);
+            color: var(--primary);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+
+        /* Cards Modernos */
+        .card { 
+            border: none; 
+            border-radius: var(--radius-lg); 
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            margin-bottom: 1rem;
+        }
+
+        .total-card { 
+            background: var(--white);
+            border-radius: 20px;
+            padding: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            border: 1px solid transparent;
+        }
+        .total-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        /* Tabelas */
+        .table-responsive { border-radius: var(--radius-md); }
+        .table thead th { 
+            background: #f8fafc; 
+            color: var(--text-muted); 
+            font-weight: 700; 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.05em;
+            padding: 0.75rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .table tbody td { padding: 1rem 0.75rem; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; }
+
+        .badge-status {
+            padding: 4px 10px;
+            border-radius: 30px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        /* Inputs */
+        .form-control, .form-select {
+            border-radius: var(--radius-md);
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Config Pill */
+        .config-pill {
+            background: #f1f5f9;
+            padding: 10px 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .db-badge {
+            background: #eef2ff;
+            color: #4f46e5;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        @media print {
+            .app-header, .nav-pills, .btn, form, #area-relatorio button { display: none !important; }
+            .modal-content { border: none !important; box-shadow: none !important; }
+            body { background: white; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Header -->
+    <header class="app-header shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <div>
+                <h5 class="m-0 fw-800 text-dark d-flex align-items-center">
+                    <i class="bi bi-shield-check text-primary me-2"></i>
+                    Gestor<span class="text-primary">PRO</span>
+                </h5>
+                <div class="mt-1"><span class="db-badge" id="display-db-name">CARTEIRA: PADRÃO</span></div>
+            </div>
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm rounded-pill px-3 fw-700" onclick="exportarBackup()">
+                    <i class="bi bi-download"></i> <span class="d-none d-md-inline">Backup</span>
+                </button>
+                <button class="btn btn-outline-secondary btn-sm rounded-pill px-3" onclick="document.getElementById('input-import').click()">
+                    <i class="bi bi-upload"></i> <span class="d-none d-md-inline">Importar</span>
+                </button>
+                <input type="file" id="input-import" style="display:none" onchange="importarBackup(this)">
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <!-- Menu Principal -->
+        <div class="text-center mb-4">
+            <ul class="nav nav-pills" id="mainTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active" id="tab-lancamentos" data-bs-toggle="tab" data-bs-target="#content-lancamentos">Lançar</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-relatorios" data-bs-toggle="tab" data-bs-target="#content-relatorios">Relatórios</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="tab-config" data-bs-toggle="tab" data-bs-target="#content-config">Ajustes</button>
+                </li>
+            </ul>
+        </div>
+
+        <div class="tab-content">
+            
+            <!-- ABA: LANÇAMENTOS -->
+            <div class="tab-pane fade show active" id="content-lancamentos" role="tabpanel">
+                <div class="card p-4 shadow-sm border-0">
+                    <h6 class="fw-800 mb-3">Nova Despesa</h6>
+                    <form id="form-nova-despesa">
+                        <div class="row g-2">
+                            <div class="col-12 col-md-8">
+                                <label class="form-label">Descrição</label>
+                                <input type="text" class="form-control" id="form-desc" required placeholder="Ex: Supermercado...">
+                            </div>
+                            <div class="col-12 col-md-4">
+                                <label class="form-label">Vencimento</label>
+                                <input type="date" class="form-control" id="form-vencimento" required>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label class="form-label">Valor R$</label>
+                                <input type="text" class="form-control" id="form-valor" placeholder="0,00" required>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label">Parcelas</label>
+                                <input type="number" class="form-control" id="form-qtd-parcelas" value="1" min="1">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label">Pagante</label>
+                                <select id="form-pagante" class="form-select" required></select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Categoria</label>
+                                <select id="form-categoria" class="form-select" required></select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Status</label>
+                                <select id="form-status" class="form-select" required></select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label">Divisão:</label>
+                                <div id="form-dividir-com" class="border rounded-3 p-2 bg-light"></div>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100 mt-4 py-3 shadow-sm">
+                            <i class="bi bi-plus-lg me-1"></i> Confirmar Lançamento
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="fw-700 text-muted mb-2 ps-1">Recentes</h6>
+                    <div id="log-vazio" class="text-center p-4 bg-white rounded-4 d-none">Sem registros.</div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <tbody id="log-home-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: RELATÓRIOS -->
+            <div class="tab-pane fade" id="content-relatorios" role="tabpanel">
+                <div class="card p-3 mb-3 border-0">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-5">
+                            <select id="filtro-mes" class="form-select"></select>
+                        </div>
+                        <div class="col-4">
+                            <select id="filtro-ano" class="form-select"></select>
+                        </div>
+                        <div class="col-3">
+                            <button class="btn btn-primary w-100" onclick="buscarRelatorio()"><i class="bi bi-search"></i></button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="area-relatorio" style="display: none;">
+                    <div id="container-totais" class="row g-2 mb-4"></div>
+                    
+                    <div class="card p-3 mb-3 border-primary border-opacity-10 bg-primary bg-opacity-10">
+                         <div class="d-flex gap-2">
+                             <select id="select-extrato" class="form-select"></select>
+                             <button class="btn btn-dark rounded-pill px-4" onclick="abrirPopupExtrato()">Extrato</button>
+                         </div>
+                    </div>
+                    
+                    <div class="card overflow-hidden border-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Venc.</th>
+                                        <th>Gasto</th>
+                                        <th>Valor</th>
+                                        <th>Status</th>
+                                        <th class="text-end">...</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tabela-relatorio-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA: AJUSTES -->
+            <div class="tab-pane fade" id="content-config" role="tabpanel">
+                <div class="card p-4 mb-4 border-0">
+                    <h6 class="fw-bold mb-3">Nome da Carteira Local</h6>
+                    <div class="input-group">
+                        <input type="text" id="config-db-name" class="form-control" placeholder="Ex: Pessoal, Trabalho...">
+                        <button class="btn btn-primary" onclick="alterarNomeDB()">Trocar</button>
+                    </div>
+                    <small class="text-muted mt-2">Trocar o nome mudará os dados salvos no navegador. Use nomes diferentes para carteiras isoladas.</small>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-12 col-md-4">
+                        <div class="card p-3 h-100 border-0">
+                            <h6 class="fw-bold mb-3">Pessoas</h6>
+                            <div class="input-group mb-2">
+                                <input type="text" id="add-nome" class="form-control" placeholder="Nome...">
+                                <button class="btn btn-primary" onclick="salvarConfig('nomes', 'add-nome')">+</button>
+                            </div>
+                            <div id="lista-nomes"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="card p-3 h-100 border-0">
+                            <h6 class="fw-bold mb-3">Categorias</h6>
+                            <div class="input-group mb-2">
+                                <input type="text" id="add-cat" class="form-control" placeholder="Ex: Mercado...">
+                                <button class="btn btn-primary" onclick="salvarConfig('categorias', 'add-cat')">+</button>
+                            </div>
+                            <div id="lista-categorias"></div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <div class="card p-3 h-100 border-0">
+                            <h6 class="fw-bold mb-3">Status</h6>
+                            <div class="input-group mb-2">
+                                <input type="text" id="add-status" class="form-control" placeholder="Ex: Pendente...">
+                                <button class="btn btn-primary" onclick="salvarConfig('status', 'add-status')">+</button>
+                            </div>
+                            <div id="lista-status"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- MODAL: EXTRATO -->
+    <div class="modal fade" id="modal-extrato" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content overflow-hidden">
+                <div class="modal-extrato-header">
+                    <h2 class="fw-800 m-0" id="extrato-nome">---</h2>
+                    <p class="m-0 opacity-75 fw-500" id="extrato-periodo">---</p>
+                </div>
+                <div class="modal-body p-4">
+                    <div id="extrato-tabela-container" class="table-responsive"></div>
+                    <div class="mt-4 p-4 rounded-4 d-flex justify-content-between align-items-center" style="background: #f8fafc;">
+                        <span class="fw-700 text-muted">A PAGAR</span>
+                        <h2 id="extrato-total" class="fw-800 m-0 text-primary">R$ 0,00</h2>
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-light px-4 rounded-pill" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-dark px-4 rounded-pill" onclick="window.print()">Imprimir</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDITAR -->
+    <div class="modal fade" id="modal-editar" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0"><h5 class="fw-800 m-0">Editar</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body p-4">
+                    <input type="hidden" id="edit-id">
+                    <div class="row g-2">
+                        <div class="col-12"><label class="form-label">Descrição</label><input type="text" class="form-control" id="edit-desc"></div>
+                        <div class="col-6"><label class="form-label">Data</label><input type="date" class="form-control" id="edit-vencimento"></div>
+                        <div class="col-6"><label class="form-label">Valor</label><input type="text" class="form-control" id="edit-valor"></div>
+                        <div class="col-6"><label class="form-label">Pagante</label><select id="edit-pagante" class="form-select"></select></div>
+                        <div class="col-6"><label class="form-label">Status</label><select id="edit-status" class="form-select"></select></div>
+                        <div class="col-12">
+                            <label class="form-label">Divisão:</label>
+                            <div id="edit-dividir-com" class="border rounded p-2 bg-light"></div>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-4 py-3" onclick="atualizarLancamento()">Salvar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EXCLUSÃO -->
+    <div class="modal fade" id="modal-excluir" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content text-center p-4">
+                <div class="text-danger mb-3"><i class="bi bi-trash3 fs-1"></i></div>
+                <h6 class="fw-800">Apagar Parcelamento?</h6>
+                <div class="d-grid gap-2 mt-4">
+                    <button class="btn btn-outline-danger py-2 rounded-pill small" id="btn-excluir-um">Só esta</button>
+                    <button class="btn btn-danger py-2 rounded-pill small" id="btn-excluir-todos">Tudo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        /**
+         * LÓGICA DE DADOS & STORAGE IDENTIFICADO
+         */
+        let ACTIVE_DB_NAME = localStorage.getItem('FIN_ACTIVE_DB') || 'PADRAO';
+        let STORAGE_KEY = 'GESTOR_WEB_' + ACTIVE_DB_NAME;
+
+        let db = {
+            lancamentos: [],
+            config: {
+                nomes: ["Eu"],
+                categorias: ["Moradia", "Mercado"],
+                status: ["Pendente", "Pago"]
+            }
+        };
+
+        let modExtrato, modEditar, modExcluir;
+        let idFilaExclusao = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modExtrato = new bootstrap.Modal(document.getElementById('modal-extrato'));
+            modEditar = new bootstrap.Modal(document.getElementById('modal-editar'));
+            modExcluir = new bootstrap.Modal(document.getElementById('modal-excluir'));
+            
+            document.getElementById('config-db-name').value = ACTIVE_DB_NAME;
+            document.getElementById('display-db-name').textContent = 'CARTEIRA: ' + ACTIVE_DB_NAME;
+
+            carregarDados();
+            initApp();
+            renderizarRecentes();
+
+            document.getElementById('btn-excluir-um').addEventListener('click', () => confirmarAcaoExcluir(false));
+            document.getElementById('btn-excluir-todos').addEventListener('click', () => confirmarAcaoExcluir(true));
+        });
+
+        function alterarNomeDB() {
+            const novoNome = document.getElementById('config-db-name').value.trim().toUpperCase() || 'PADRAO';
+            if (confirm("Alternar para a carteira '" + novoNome + "'? O app irá recarregar.")) {
+                localStorage.setItem('FIN_ACTIVE_DB', novoNome);
+                location.reload();
+            }
+        }
+
+        function carregarDados() {
+            const salvo = localStorage.getItem(STORAGE_KEY);
+            if (salvo) db = JSON.parse(salvo);
+            else salvar();
+        }
+
+        function salvar() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(db));
+            refreshUI();
+        }
+
+        function initApp() {
+            configurarFiltrosData();
+            refreshUI();
+            aplicarMascara(document.getElementById('form-valor'));
+            aplicarMascara(document.getElementById('edit-valor'));
+            document.getElementById('form-nova-despesa').addEventListener('submit', handleNovoLancamento);
+        }
+
+        function refreshUI() {
+            popularSelect('form-categoria', db.config.categorias);
+            popularSelect('edit-categoria', db.config.categorias);
+            popularSelect('form-status', db.config.status);
+            popularSelect('edit-status', db.config.status);
+            popularSelect('form-pagante', db.config.nomes);
+            popularSelect('edit-pagante', db.config.nomes);
+            popularChecks('form-dividir-com', db.config.nomes);
+            popularChecks('edit-dividir-com', db.config.nomes);
+            renderizarConfigs();
+        }
+
+        /** UTILS INTERFACE **/
+        function popularSelect(id, list) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const val = el.value;
+            el.innerHTML = '<option value="">Selecionar...</option>' + list.map(i => `<option value="${i}">${i}</option>`).join('');
+            el.value = val;
+        }
+
+        function popularChecks(id, list) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.innerHTML = list.map((item, idx) => `
+                <div class="d-flex align-items-center justify-content-between mb-1 p-2 bg-white rounded-2 border">
+                    <div class="form-check m-0">
+                        <input class="form-check-input" type="checkbox" id="${id}-${idx}" value="${item}" onchange="togglePerc(this)">
+                        <label class="form-check-label small fw-bold" for="${id}-${idx}">${item}</label>
+                    </div>
+                    <div class="input-group input-group-sm" style="width: 70px;">
+                        <input type="number" class="form-control border-0 bg-light perc-field" placeholder="%" disabled>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function togglePerc(cb) {
+            const field = cb.closest('.d-flex').querySelector('.perc-field');
+            field.disabled = !cb.checked;
+            if (!cb.checked) field.value = '';
+        }
+
+        function aplicarMascara(el) {
+            el.addEventListener('input', e => {
+                let v = e.target.value.replace(/\D/g, '');
+                if (!v) { e.target.value = ''; return; }
+                v = (parseInt(v, 10) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+                e.target.value = v;
+            });
+        }
+
+        /** CORE LOGIC **/
+        function handleNovoLancamento(e) {
+            e.preventDefault();
+            const val = parseFloat(document.getElementById('form-valor').value.replace(/\./g, '').replace(',', '.'));
+            const qtd = parseInt(document.getElementById('form-qtd-parcelas').value) || 1;
+            const div = getDivisao('form-dividir-com');
+            const dataOrig = document.getElementById('form-vencimento').value;
+            const gId = "G" + Date.now();
+            
+            if (div.length === 0) return alert("Escolha quem divide.");
+
+            for (let i = 0; i < qtd; i++) {
+                const dObj = new Date(dataOrig + 'T12:00:00');
+                dObj.setMonth(dObj.getMonth() + i);
+                const format = dObj.toISOString().split('T')[0];
+
+                db.lancamentos.push({
+                    id: "ID-" + Date.now() + "-" + i,
+                    groupId: qtd > 1 ? gId : null,
+                    desc: document.getElementById('form-desc').value + (qtd > 1 ? ` (${i+1}/${qtd})` : ""),
+                    vencimento: format,
+                    valor: val,
+                    categoria: document.getElementById('form-categoria').value,
+                    pagante: document.getElementById('form-pagante').value,
+                    status: document.getElementById('form-status').value,
+                    divisao: div
+                });
+            }
+            salvar();
+            e.target.reset();
+            document.getElementById('form-qtd-parcelas').value = 1;
+            renderizarRecentes();
+            alert("Lançado!");
+        }
+
+        function renderizarRecentes() {
+            const b = document.getElementById('log-home-body');
+            const v = document.getElementById('log-vazio');
+            const h = new Date();
+            const m = ('0' + (h.getMonth() + 1)).slice(-2);
+            const a = h.getFullYear().toString();
+
+            const items = db.lancamentos.filter(d => {
+                const p = d.vencimento.split('-');
+                return p[1] === m && p[0] === a;
+            }).sort((a,b) => b.vencimento.localeCompare(a.vencimento));
+
+            v.classList.toggle('d-none', items.length > 0);
+            b.innerHTML = items.map(d => `
+                <tr class="bg-white">
+                    <td width="70" class="fw-bold text-muted">${d.vencimento.split('-').reverse().slice(0,2).join('/')}</td>
+                    <td><div class="fw-bold">${d.desc}</div><small class="text-muted">${d.categoria}</small></td>
+                    <td class="fw-bold text-primary">R$ ${d.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+                    <td class="text-end">
+                        <button class="btn btn-light btn-sm rounded-circle" onclick="confirmarExcluir('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function confirmarExcluir(id) {
+            idFilaExclusao = id;
+            const i = db.lancamentos.find(l => l.id === id);
+            if (i && i.groupId) modExcluir.show();
+            else if(confirm("Apagar?")) confirmarAcaoExcluir(false);
+        }
+
+        function confirmarAcaoExcluir(todos) {
+            const i = db.lancamentos.find(l => l.id === idFilaExclusao);
+            if (todos && i.groupId) db.lancamentos = db.lancamentos.filter(l => l.groupId !== i.groupId);
+            else db.lancamentos = db.lancamentos.filter(l => l.id !== idFilaExclusao);
+            salvar();
+            modExcluir.hide();
+            renderizarRecentes();
+            if (document.getElementById('area-relatorio').style.display !== 'none') buscarRelatorio();
+        }
+
+        function abrirEdicao(id) {
+            const d = db.lancamentos.find(l => l.id === id);
+            if (!d) return;
+            document.getElementById('edit-id').value = d.id;
+            document.getElementById('edit-desc').value = d.desc;
+            document.getElementById('edit-vencimento').value = d.vencimento;
+            document.getElementById('edit-valor').value = d.valor.toLocaleString('pt-BR',{minimumFractionDigits:2});
+            document.getElementById('edit-categoria').value = d.categoria;
+            document.getElementById('edit-status').value = d.status;
+            document.getElementById('edit-pagante').value = d.pagante;
+            setDivisao('edit-dividir-com', d.divisao);
+            modEditar.show();
+        }
+
+        function atualizarLancamento() {
+            const id = document.getElementById('edit-id').value;
+            const idx = db.lancamentos.findIndex(l => l.id === id);
+            db.lancamentos[idx] = {
+                ...db.lancamentos[idx],
+                desc: document.getElementById('edit-desc').value,
+                vencimento: document.getElementById('edit-vencimento').value,
+                valor: parseFloat(document.getElementById('edit-valor').value.replace(/\./g, '').replace(',', '.')),
+                categoria: document.getElementById('edit-categoria').value,
+                status: document.getElementById('edit-status').value,
+                pagante: document.getElementById('edit-pagante').value,
+                divisao: getDivisao('edit-dividir-com')
+            };
+            salvar();
+            modEditar.hide();
+            renderizarRecentes();
+            buscarRelatorio();
+        }
+
+        function buscarRelatorio() {
+            const m = document.getElementById('filtro-mes').value;
+            const a = document.getElementById('filtro-ano').value;
+            const fil = db.lancamentos.filter(d => {
+                const p = d.vencimento.split('-');
+                return p[1] === m && p[0] === a;
+            }).sort((a,b) => a.vencimento.localeCompare(b.vencimento));
+
+            document.getElementById('area-relatorio').style.display = 'block';
+            const tot = {};
+            db.config.nomes.forEach(n => tot[n] = 0);
+            fil.forEach(d => {
+                const res = calcDivisao(d.valor, d.divisao);
+                for(let n in res) if(tot.hasOwnProperty(n)) tot[n] += res[n];
+            });
+
+            document.getElementById('container-totais').innerHTML = Object.entries(tot).map(([n,v]) => `
+                <div class="col-6">
+                    <div class="total-card shadow-sm">
+                        <div class="total-icon"><i class="bi bi-person"></i></div>
+                        <div><h6>${n}</h6><h4>R$ ${v.toLocaleString('pt-BR',{minimumFractionDigits:2})}</h4></div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('tabela-relatorio-body').innerHTML = fil.map(d => `
+                <tr>
+                    <td>${d.vencimento.split('-').reverse().slice(0,2).join('/')}</td>
+                    <td><div class="fw-bold">${d.desc}</div></td>
+                    <td class="fw-bold text-primary">R$ ${d.valor.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td>
+                    <td><span class="badge-status bg-light border">${d.status}</span></td>
+                    <td class="text-end"><button class="btn btn-sm text-primary p-0" onclick="abrirEdicao('${d.id}')"><i class="bi bi-pencil-square"></i></button></td>
+                </tr>
+            `).join('');
+
+            popularSelect('select-extrato', db.config.nomes);
+        }
+
+        function abrirPopupExtrato() {
+            const int = document.getElementById('select-extrato').value;
+            const m = document.getElementById('filtro-mes').value, a = document.getElementById('filtro-ano').value;
+            if (!int) return;
+
+            const items = db.lancamentos.filter(d => {
+                const p = d.vencimento.split('-');
+                return p[1] === m && p[0] === a && d.divisao.some(s => s.split(':')[0] === int);
+            });
+
+            let t = 0;
+            const body = items.map(d => {
+                const v = calcDivisao(d.valor, d.divisao)[int] || 0;
+                t += v;
+                return `<tr><td>${d.vencimento.split('-').reverse().join('/')}</td><td>${d.desc}</td><td class="text-end fw-bold">R$ ${v.toLocaleString('pt-BR',{minimumFractionDigits:2})}</td></tr>`;
+            }).join('');
+
+            document.getElementById('extrato-nome').textContent = int;
+            document.getElementById('extrato-periodo').textContent = `Competência ${m}/${a}`;
+            document.getElementById('extrato-tabela-container').innerHTML = `<table class="table table-sm"><thead><tr><th>Data</th><th>Gasto</th><th class="text-end">Parte</th></tr></thead><tbody>${body}</tbody></table>`;
+            document.getElementById('extrato-total').textContent = "R$ " + t.toLocaleString('pt-BR',{minimumFractionDigits:2});
+            modExtrato.show();
+        }
+
+        /** HELPERS LOGICA **/
+        function calcDivisao(total, array) {
+            const res = {}; let pSum = 0; let sem = [];
+            array.forEach(i => {
+                const parts = i.split(':');
+                if(parts.length > 1) { const v = parseFloat(parts[1])||0; res[parts[0]] = total * (v/100); pSum += v; }
+                else sem.push(i);
+            });
+            if(sem.length > 0) {
+                const rVal = total * (Math.max(0, 100 - pSum) / 100);
+                sem.forEach(n => res[n] = rVal / sem.length);
+            }
+            return res;
+        }
+
+        function getDivisao(cid) {
+            const res = [];
+            document.getElementById(cid).querySelectorAll('.d-flex').forEach(row => {
+                const cb = row.querySelector('.form-check-input'), pf = row.querySelector('.perc-field');
+                if(cb.checked) res.push(pf.value ? `${cb.value}:${pf.value}` : cb.value);
+            });
+            return res;
+        }
+
+        function setDivisao(cid, vals) {
+            document.getElementById(cid).querySelectorAll('.d-flex').forEach(row => {
+                const cb = row.querySelector('.form-check-input'), pf = row.querySelector('.perc-field');
+                const match = (vals || []).find(v => v.split(':')[0] === cb.value);
+                cb.checked = !!match; pf.disabled = !match;
+                pf.value = match && match.includes(':') ? match.split(':')[1] : '';
+            });
+        }
+
+        function configurarFiltrosData() {
+            const m = document.getElementById('filtro-mes'), a = document.getElementById('filtro-ano'), h = new Date();
+            const meses = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+            meses.forEach((nm, i) => { m.add(new Option(nm, ('0'+(i+1)).slice(-2), false, i === h.getMonth())); });
+            for(let i = h.getFullYear(); i >= h.getFullYear()-2; i--) a.add(new Option(i, i));
+        }
+
+        function renderizarConfigs() {
+            ['nomes','categorias','status'].forEach(t => {
+                const cid = (t === 'nomes') ? 'lista-nomes' : (t === 'categorias') ? 'lista-categorias' : 'lista-status';
+                document.getElementById(cid).innerHTML = db.config[t].map((it, idx) => `
+                    <div class="config-pill"><span>${it}</span><button class="btn btn-sm text-danger p-0" onclick="removerConfig('${t}',${idx})"><i class="bi bi-x-circle-fill"></i></button></div>
+                `).join('');
+            });
+        }
+
+        function salvarConfig(t, i) {
+            const v = document.getElementById(i).value.trim();
+            if(!v || db.config[t].includes(v)) return;
+            db.config[t].push(v); document.getElementById(i).value = ''; salvar();
+        }
+
+        function removerConfig(t, idx) {
+            if(confirm("Remover?")) { db.config[t].splice(idx, 1); salvar(); }
+        }
+
+        function exportarBackup() {
+            const blob = new Blob([JSON.stringify(db, null, 2)], {type: 'application/json'});
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+            a.download = `FINANCEIRO_${ACTIVE_DB_NAME}_${new Date().toISOString().slice(0,10)}.json`;
+            a.click();
+        }
+
+        function importarBackup(input) {
+            const f = input.files[0]; if(!f) return;
+            const r = new FileReader();
+            r.onload = e => {
+                try {
+                    const j = JSON.parse(e.target.result);
+                    if(j.lancamentos && confirm("Restaurar dados nesta carteira? Isso apagará o que está aqui agora.")) { db = j; salvar(); location.reload(); }
+                } catch(e) { alert("Arquivo inválido."); }
+            };
+            r.readAsText(f);
+        }
+    </script>
+</body>
+</html>
